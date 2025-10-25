@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  ADMIN
+  CLIENT
+}
+
+model User {
+  id        Int   @id @default(autoincrement())
+  name      String?
+  phone     String
+  password  String
+  Usertype  UserType
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  adressId  Int   @unique
+  adress    Adress   @relation(fields: [adressId], references: [id])
+
+  orders Order[] // Orders quando o usuário é cliente
+
+  createdOrders Order[] @relation("OrderCreatedBy") // Orders criado pelo usuário
+}
+
+model Adress {
+  id        Int   @id @default(autoincrement())
+  street    String
+  number    String
+  district  String
+  city      String
+  state     String
+  zipCode   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User User[]
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  Pix
+}
+
+model Order { 
+  id            Int   @id @default(autoincrement())
+  paymentMethod PaymentMethod
+  status        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  clienteId     Int
+  cliente       User   @relation(fields: [clienteId], references: [id])
+
+  createdById   Int
+  createdBy     User   @relation("OrderCreatedBy", fields: [createdById], references: [id])
+
+  OrderItem OrderItem[]
+}
+
+model OrderItem {
+  id        Int   @id @default(autoincrement())
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id])
+
+  listId    Int
+  list      Item   @relation(fields: [listId], references: [id])
+}
+
+model Item {
+  id               Int   @id @default(autoincrement())
+  description      String
+  unitPrice        Decimal @db.Decimal(10, 2)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  categoryId       Int
+  category         Category @relation(fields: [categoryId], references: [id])
+
+  orderItems OrderItem[]
+}
+
+model Category {
+  id              Int   @id @default(autoincrement())
+  description     String @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  items Item[]
+}
