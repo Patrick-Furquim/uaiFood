@@ -11,13 +11,20 @@ import {
 import { validate } from '../middleware/validateRequest.js';
 import { createUserSchema, updateUserSchema, updateAdressSchema } from '../validators/user.schema.js';
 
+//middlewares de segurança
+import { checkAuth } from '../middleware/checkAuth.js';
+import { checkRole } from '../middleware/checkRole.js';
+
 const router = Router();
 
+//Rota Pública (Registro de novo usuário)
 router.post('/', validate(createUserSchema), createUser);
-router.get('/', getAllUsers);
-router.get('/:id', getUserById);
-router.put('/:id', validate(updateUserSchema), updateUser);
-router.put('/:userId/address', validate(updateAdressSchema), updateUserAddress);
-router.delete('/:id', deleteUser);
+
+//Rotas de gerenciamento (ADMIN)
+router.get('/',           checkAuth, checkRole(['ADMIN']), getAllUsers);
+router.get('/:id',        checkAuth, checkRole(['ADMIN']), getUserById);
+router.put('/:id',        checkAuth, checkRole(['ADMIN']), validate(updateUserSchema), updateUser);
+router.put('/:userId/address', checkAuth, checkRole(['ADMIN']), validate(updateAdressSchema), updateUserAddress);
+router.delete('/:id',     checkAuth, checkRole(['ADMIN']), deleteUser);
 
 export default router;

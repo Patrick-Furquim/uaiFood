@@ -10,12 +10,19 @@ import {
 import { validate } from '../middleware/validateRequest.js';
 import { createItemSchema, updateItemSchema } from '../validators/item.schema.js';
 
+//middlewares de segurança
+import { checkAuth } from '../middleware/checkAuth.js';
+import { checkRole } from '../middleware/checkRole.js';
+
 const router = Router();
 
-router.post('/', validate(createItemSchema), createItem); // Create item with validation
-router.get('/', getAllItems);// List all items
-router.get('/:id', getItemById);// Get item by ID
-router.put('/:id', validate(updateItemSchema), updateItem);// Update item with validation
-router.delete('/:id', deleteItem);// Delete item by ID
+//Proteger rotas de 'escrita' (ADMIN)
+router.post('/',    checkAuth, checkRole(['ADMIN']), validate(createItemSchema), createItem);
+router.put('/:id',  checkAuth, checkRole(['ADMIN']), validate(updateItemSchema), updateItem);
+router.delete('/:id', checkAuth, checkRole(['ADMIN']), deleteItem);
+
+//rotas de 'leitura' públicas
+router.get('/', getAllItems);
+router.get('/:id', getItemById);
 
 export default router;

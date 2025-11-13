@@ -41,12 +41,23 @@ export const createOrder = async (req, res) => {
 
 export const getAllOrders = async (req, res) => {
   const { clienteId } = req.query;
+  const { userId, role } = req.user; // Pego do token pelo checkAuth
 
   try {
+    const whereClause = {};
+
+    // Se for CLIENT, forçamos o filtro para SÓ os pedidos dele
+    if (role === 'CLIENT') {
+      whereClause.clienteId = userId;
+    } 
+    // Se for ADMIN e ele *passar* um clienteId (opcional), filtramos
+    else if (role === 'ADMIN' && clienteId) {
+      whereClause.clienteId = Number(clienteId);
+    }
+    // Se for ADMIN e não passar clienteId, o whereClause fica vazio e ele vê tudo
+
     const orders = await prisma.order.findMany({
-      where: {
-        clienteId: clienteId ? Number(clienteId) : undefined,
-      },
+      where: whereClause, // Aplicamos o filtro de segurança
       include: {
         cliente: {
           select: { name: true, phone: true }
@@ -67,6 +78,8 @@ export const getAllOrders = async (req, res) => {
 
 export const getOrderById = async (req, res) => {
   const { id } = req.params;
+  const { userId, role } = req.user; // Pego do token
+
   try {
     const order = await prisma.order.findUnique({
       where: { id: Number(id) },
@@ -84,6 +97,14 @@ export const getOrderById = async (req, res) => {
     if (!order) {
       return res.status(404).json({ message: 'Pedido não encontrado' });
     }
+
+    // Se for CLIENT, checamos se ele é o dono do pedido
+    // Se não for o dono, retornamos 403 (Proibido)
+    if (role === 'CLIENT' && order.clienteId !== userId) {
+      return res.status(403).json({ message: 'Acesso negado. Este pedido não é seu.' });
+    }
+    
+    // Se for ADMIN ou o dono do pedido, pode ver
     res.status(200).json(order);
   } catch (error) {
     res.status(500).json({ message: error.message });

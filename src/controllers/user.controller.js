@@ -1,19 +1,20 @@
 import prisma from '../database/prismaClient.js';
-// TODO: Instalar (npm install bcryptjs) e importar bcrypt para hashear a senha
-// import bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
+
 // CREATE
 export const createUser = async (req, res) => {
   const { name, phone, password, Usertype, adress } = req.body;
 
   try {
-    // TODO: Hashear a senha
-    // const hashedPassword = await bcrypt.hash(password, 10);
+    // 2. Hashear a senha
+    // O '10' é o "custo" do hash, um valor seguro
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
       data: {
         name,
         phone,
-        password: password, // Substituir por hashedPassword
+        password: hashedPassword, // 3. Salvamos o hash
         Usertype,
         adress: {
           create: adress, // Cria o endereço aninhado
@@ -33,18 +34,26 @@ export const createUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 // READ (All)
 export const getAllUsers = async (req, res) => {
    try {
     const users = await prisma.user.findMany({
       include: { adress: true },
-      // TODO: Remover senhas da listagem
     });
-    res.status(200).json(users);
+
+    // 4. Remover senhas da listagem (Boa Prática!)
+    const usersWithoutPassword = users.map(user => {
+      delete user.password;
+      return user;
+    });
+
+    res.status(200).json(usersWithoutPassword);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 // READ (One)
 export const getUserById = async (req, res) => {
   const { id } = req.params;
@@ -64,20 +73,21 @@ export const getUserById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 // UPDATE
 export const updateUser = async (req, res) => {
   const { id } = req.params;
   const data = req.body;
 
-  // TODO: Se a senha for atualizada, hashear
-  // if (data.password) {
-  //   data.password = await bcrypt.hash(data.password, 10);
-  // }
+  // 5. Se a senha estiver sendo atualizada, hashear
+  if (data.password) {
+    data.password = await bcrypt.hash(data.password, 10);
+  }
 
   try {
     const user = await prisma.user.update({
       where: { id: Number(id) },
-      data: data,
+      data: data, // data contém apenas os campos validados pelo Zod (updateUserSchema)
     });
     delete user.password;
     res.status(200).json(user);
@@ -88,6 +98,7 @@ export const updateUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 // UPDATE Adress do Usuário
 export const updateUserAddress = async (req, res) => {
   const { userId } = req.params;
@@ -115,6 +126,7 @@ export const updateUserAddress = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 // DELETE
 export const deleteUser = async (req, res) => {
   const { id } = req.params;

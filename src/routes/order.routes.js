@@ -10,12 +10,19 @@ import {
 import { validate } from '../middleware/validateRequest.js';
 import { createOrderSchema, updateOrderStatusSchema } from '../validators/order.schema.js';
 
+//middlewares de segurança
+import { checkAuth } from '../middleware/checkAuth.js';
+import { checkRole } from '../middleware/checkRole.js';
+
 const router = Router();
 
-router.post('/', validate(createOrderSchema), createOrder);
-router.get('/', getAllOrders);
-router.get('/:id', getOrderById);
-router.put('/:id', validate(updateOrderStatusSchema), updateOrderStatus);
-router.delete('/:id', deleteOrder);
+//Rotas para CLIENTES ou ADMINS
+router.post('/',    checkAuth, checkRole(['CLIENT', 'ADMIN']), validate(createOrderSchema), createOrder);
+router.get('/',     checkAuth, checkRole(['CLIENT', 'ADMIN']), getAllOrders);
+router.get('/:id',  checkAuth, checkRole(['CLIENT', 'ADMIN']), getOrderById);
+
+//Rotas apenas para ADMINS (gerenciamento)
+router.put('/:id',  checkAuth, checkRole(['ADMIN']), validate(updateOrderStatusSchema), updateOrderStatus);
+router.delete('/:id', checkAuth, checkRole(['ADMIN']), deleteOrder);
 
 export default router;
