@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors'; // <--- 1. Importe o cors
 import routes from './routes/index.js';
 import swaggerUi from 'swagger-ui-express';
 import fs from 'fs';
@@ -12,6 +13,8 @@ const __dirname = path.dirname(__filename);
 const swaggerFile = JSON.parse(fs.readFileSync(path.join(__dirname, '../swagger.json'), 'utf8'));
 
 app.use(express.json());
+
+app.use(cors()); 
 
 app.use(
   '/api-docs',
