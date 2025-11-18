@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import AuthContext from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const LoginPage = () => {
   const [phone, setPhone] = useState('');
@@ -12,51 +12,48 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(''); 
-
+    setError('');
     const sucesso = await login(phone, password);
-
-    if (sucesso) {
-      navigate('/');
-    } else {
-      setError('Telefone ou senha incorretos!');
-    }
+    if (sucesso) navigate('/');
+    else setError('Telefone ou senha incorretos!');
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
-      <h2>Acessar uaiFood</h2>
+    <div className="auth-container">
+      <h2 className="auth-title">Acessar Conta</h2>
       
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <div className="alert" style={{color: 'red', marginBottom: '15px', textAlign: 'center'}}>{error}</div>}
       
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <div>
-          <label>Telefone:</label>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label>Telefone</label>
           <input
+            className="form-control"
             type="text"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             required
-            placeholder="34999998888"
-            style={{ width: '100%', padding: '8px' }}
+            placeholder="Ex: 34999998888"
           />
         </div>
 
-        <div>
-          <label>Senha:</label>
+        <div className="form-group">
+          <label>Senha</label>
           <input
+            className="form-control"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            style={{ width: '100%', padding: '8px' }}
           />
         </div>
 
-        <button type="submit" style={{ padding: '10px', cursor: 'pointer' }}>
-          Entrar
-        </button>
+        <button type="submit" className="btn btn-primary btn-block">Entrar</button>
       </form>
+
+      <p style={{marginTop: '20px', textAlign: 'center'}}>
+        Não tem conta? <Link to="/register">Cadastre-se aqui</Link>
+      </p>
     </div>
   );
 };

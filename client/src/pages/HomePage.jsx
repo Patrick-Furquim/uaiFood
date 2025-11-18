@@ -1,72 +1,109 @@
 import React, { useEffect, useState, useContext } from 'react';
-import api from '../services/api'; // Nosso axios configurado
+import api from '../services/api';
 import AuthContext from '../context/AuthContext';
+import CartContext from '../context/CartContext';
+import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const { user, logout } = useContext(AuthContext);
+  const { addToCart, cartItems } = useContext(CartContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Busca dados da API ao carregar a página
     async function fetchData() {
       try {
-        const catResponse = await api.get('/categories');
+        setLoading(true);
+        const [catResponse, itemResponse] = await Promise.all([
+          api.get('/categories'),
+          api.get('/items')
+        ]);
         setCategories(catResponse.data);
-
-        const itemResponse = await api.get('/items');
         setItems(itemResponse.data);
+        setError(null);
       } catch (error) {
         console.error("Erro ao buscar dados", error);
+        setError("Não foi possível carregar o cardápio. Verifique o servidor.");
+      } finally {
+        setLoading(false);
       }
     }
     fetchData();
   }, []);
 
- return (
-    <div style={{ padding: '20px' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1>🥡 Cardápio uaiFood</h1>
+  if (loading) return <div className="container" style={{textAlign: 'center'}}><h2>⏳ Carregando delícias...</h2></div>;
+  if (error) return <div className="container" style={{textAlign: 'center', color: 'red'}}><h2>⚠️ {error}</h2></div>;
+
+  return (
+    <div>
+      {/* Navbar */}
+      <header className="navbar">
+        <div className="navbar-brand">🥡 uai<span>Food</span></div>
         
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            {/* Link para o Carrinho */}
-            <button onClick={() => navigate('/checkout')} style={{background: 'orange', border: 'none', padding: '5px 10px', cursor: 'pointer'}}>
+        <div className="navbar-actions">
+            <button 
+              onClick={() => navigate('/checkout')} 
+              className="btn btn-primary"
+            >
               🛒 Carrinho ({cartItems.length})
             </button>
 
             {user ? (
-              <div>
-                <span>Olá, {user.name}! </span>
-                <button onClick={logout} style={{ marginLeft: '10px', background: 'red', color: 'white', border: 'none', padding: '5px 10px' }}>Sair</button>
-              </div>
+              <>
+                <span>Olá, <strong>{user.name}</strong></span>
+                <button onClick={logout} className="btn btn-outline btn-sm">Sair</button>
+              </>
             ) : (
-              <a href="/login">Login</a>
+              <button onClick={() => navigate('/login')} className="btn btn-secondary">Entrar</button>
             )}
         </div>
       </header>
 
-      {categories.map(category => (
-        <div key={category.id} style={{ marginBottom: '30px' }}>
-          <h2 style={{ borderBottom: '2px solid orange', display: 'inline-block' }}>{category.description}</h2>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px', marginTop: '10px' }}>
-            {items.filter(item => item.categoryId === category.id).map(item => (
-                <div key={item.id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px' }}>
-                  <h3>{item.description}</h3>
-                  <p style={{ color: 'green', fontWeight: 'bold' }}>R$ {Number(item.unitPrice).toFixed(2)}</p>
-                  
-                  {/* Botão de Comprar */}
-                  <button 
-                    onClick={() => addToCart(item)}
-                    style={{ width: '100%', marginTop: '10px', padding: '8px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                  >
-                    + Adicionar
-                  </button>
-                </div>
-              ))}
+      <div className="container">
+        {/* Estado Vazio */}
+        {categories.length === 0 && (
+          <div style={{ textAlign: 'center', marginTop: '50px', color: '#888' }}>
+            <h3>O cardápio está vazio. 😔</h3>
           </div>
-        </div>
-      ))}
+        )}
+
+        {/* Listagem */}
+        {categories.map(category => {
+          const categoryItems = items.filter(item => item.categoryId === category.id);
+          if (categoryItems.length === 0) return null;
+
+          return (
+            <div key={category.id} className="category-section">
+              <h2 className="category-title">{category.description}</h2>
+              
+              <div className="products-grid">
+                {categoryItems.map(item => (
+                    <div key={item.id} className="product-card">
+                      <div className="product-info">
+                        <h3>{item.description}</h3>
+                      </div>
+                      <div>
+                        <div className="product-price">
+                          R$ {Number(item.unitPrice).toFixed(2)}
+                        </div>
+                        <button 
+                          onClick={() => addToCart(item)}
+                          className="btn btn-success btn-block btn-sm"
+                        >
+                          + Adicionar
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </div>
   );
 };

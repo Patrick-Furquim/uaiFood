@@ -18,16 +18,14 @@ const CheckoutPage = () => {
 
     if (cartItems.length === 0) return alert('Carrinho vazio!');
 
-    // Montar o payload exatamente como o back-end espera
-    // OrderController.js -> createOrder
     const orderData = {
       paymentMethod: paymentMethod,
       status: "PENDING",
       clienteId: user.id,
-      createdById: user.id, // Cliente criando o próprio pedido
+      createdById: user.id,
       items: cartItems.map(item => ({
-        listId: item.id,      // O ID do Item
-        quantity: item.quantity // A quantidade selecionada
+        listId: item.id,
+        quantity: item.quantity
       }))
     };
 
@@ -35,42 +33,51 @@ const CheckoutPage = () => {
       await api.post('/orders', orderData);
       alert('Pedido realizado com sucesso! 🚀');
       clearCart();
-      navigate('/'); // Volta pra home
+      navigate('/');
     } catch (error) {
       console.error(error);
-      alert('Erro ao finalizar pedido. Veja o console.');
+      alert('Erro ao finalizar pedido.');
     }
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <h1>Finalizar Pedido</h1>
+    <div className="checkout-container container" style={{marginTop: '40px'}}>
+      <h1 style={{marginBottom: '20px', textAlign: 'center'}}>Finalizar Pedido</h1>
       
       {cartItems.length === 0 ? (
-        <p>Seu carrinho está vazio.</p>
+        <div className="card" style={{textAlign: 'center'}}>
+            <p>Seu carrinho está vazio.</p>
+            <button onClick={() => navigate('/')} className="btn btn-primary" style={{marginTop: '10px'}}>Voltar ao Menu</button>
+        </div>
       ) : (
         <>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
+          <div className="cart-list">
             {cartItems.map(item => (
-              <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', padding: '10px 0' }}>
+              <div key={item.id} className="cart-item">
                 <div>
                   <strong>{item.quantity}x</strong> {item.description}
                 </div>
-                <div>
-                  R$ {(Number(item.unitPrice) * item.quantity).toFixed(2)}
-                  <button onClick={() => removeFromCart(item.id)} style={{ marginLeft: '10px', color: 'red', border: 'none', background: 'transparent', cursor: 'pointer' }}>X</button>
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                  <span style={{marginRight: '15px'}}>R$ {(Number(item.unitPrice) * item.quantity).toFixed(2)}</span>
+                  <button onClick={() => removeFromCart(item.id)} className="btn btn-outline btn-sm" style={{color: 'red', borderColor: 'red'}}>
+                    Remover
+                  </button>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
           
-          <div style={{ marginTop: '20px', fontSize: '1.2em', textAlign: 'right' }}>
-            Total: <strong>R$ {total.toFixed(2)}</strong>
+          <div className="cart-total">
+            Total: R$ {total.toFixed(2)}
           </div>
 
-          <div style={{ marginTop: '20px', background: '#f9f9f9', padding: '15px' }}>
-            <h3>Forma de Pagamento</h3>
-            <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} style={{ padding: '8px', width: '100%' }}>
+          <div className="payment-section">
+            <h3 style={{marginBottom: '10px'}}>Forma de Pagamento</h3>
+            <select 
+                className="form-control"
+                value={paymentMethod} 
+                onChange={e => setPaymentMethod(e.target.value)}
+            >
               <option value="Pix">Pix</option>
               <option value="CASH">Dinheiro</option>
               <option value="CREDIT_CARD">Cartão de Crédito</option>
@@ -78,12 +85,10 @@ const CheckoutPage = () => {
             </select>
           </div>
 
-          <button 
-            onClick={handleFinishOrder}
-            style={{ width: '100%', marginTop: '20px', padding: '15px', background: 'green', color: 'white', border: 'none', fontSize: '1.1em', cursor: 'pointer' }}
-          >
-            Finalizar Pedido
-          </button>
+          <div style={{display: 'flex', gap: '10px'}}>
+            <button onClick={() => navigate('/')} className="btn btn-secondary" style={{flex: 1}}>Continuar Comprando</button>
+            <button onClick={handleFinishOrder} className="btn btn-success" style={{flex: 1}}>Confirmar Pedido</button>
+          </div>
         </>
       )}
     </div>
