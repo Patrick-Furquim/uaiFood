@@ -53,10 +53,22 @@ const HomePage = () => {
             </button>
 
             {user ? (
-              <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span>Olá, <strong>{user.name}</strong></span>
+                
+                {/* --- BOTÃO EXCLUSIVO DO ADMIN --- */}
+                {user.Usertype === 'ADMIN' && (
+                  <button 
+                    onClick={() => navigate('/admin')} 
+                    className="btn btn-secondary btn-sm"
+                    title="Acessar Painel Administrativo"
+                  >
+                    ⚙️ Painel
+                  </button>
+                )}
+                
                 <button onClick={logout} className="btn btn-outline btn-sm">Sair</button>
-              </>
+              </div>
             ) : (
               <button onClick={() => navigate('/login')} className="btn btn-secondary">Entrar</button>
             )}
@@ -68,12 +80,17 @@ const HomePage = () => {
         {categories.length === 0 && (
           <div style={{ textAlign: 'center', marginTop: '50px', color: '#888' }}>
             <h3>O cardápio está vazio. 😔</h3>
+            {user?.Usertype === 'ADMIN' && (
+                <p>Vá ao <strong style={{cursor: 'pointer', color: 'orange'}} onClick={() => navigate('/admin')}>Painel</strong> para cadastrar itens.</p>
+            )}
           </div>
         )}
 
         {/* Listagem */}
         {categories.map(category => {
           const categoryItems = items.filter(item => item.categoryId === category.id);
+          
+          // Opcional: Não mostrar categorias vazias
           if (categoryItems.length === 0) return null;
 
           return (

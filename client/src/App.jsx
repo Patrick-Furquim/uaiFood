@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import CheckoutPage from './pages/CheckoutPage';
+import AdminDashboard from './pages/AdminDashboard'; // <--- IMPORTANTE
 
 function App() {
   return (
@@ -13,19 +14,21 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
-        
-        {/* <--- ADICIONAR A ROTA AQUI */}
         <Route path="/register" element={<RegisterPage />} /> 
 
+        {/* Rotas para Clientes Logados */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/meus-pedidos" element={<h1>Meus Pedidos (Em construção)</h1>} />
+          <Route path="/checkout" element={<CheckoutPage />} />
         </Route>
 
+        {/* Rotas EXCLUSIVAS para Admin */}
         <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<h1>Painel Admin (Em construção)</h1>} />
+          {/* Aqui carregamos o componente real do Dashboard */}
+          <Route path="/admin" element={<AdminDashboard />} />
         </Route>
-
-        <Route path="/checkout" element={<CheckoutPage />} />
+        
+        {/* Rota para 404 */}
+        <Route path="*" element={<div style={{textAlign:'center', marginTop: 50}}><h2>404 - Página não encontrada</h2><a href="/">Voltar</a></div>} />
       </Routes>
     </BrowserRouter>
   );
