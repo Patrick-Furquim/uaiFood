@@ -1,0 +1,192 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "uaiFood API",
+    "version": "1.0.0",
+    "description": "Documentação da API do uaiFood, criada na disciplina de DAWII."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Servidor de Desenvolvimento"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Realiza o login do usuário",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login bem-sucedido, retorna token e usuário."
+          },
+          "401": {
+            "description": "Telefone ou senha inválidos."
+          }
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Lista todas as categorias (Público)",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Lista de categorias.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Categories"],
+        "summary": "Cria uma nova categoria (Apenas ADMIN)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Categoria criada." },
+          "401": { "description": "Não autorizado (Token inválido/ausente)." },
+          "403": { "description": "Acesso negado (Não é ADMIN)." },
+          "409": { "description": "Categoria já existe." }
+        }
+      }
+    },
+    "/categories/{id}": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Busca uma categoria pelo ID (Público)",
+        "security": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "ID da categoria"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Dados da categoria." },
+          "404": { "description": "Categoria não encontrada." }
+        }
+      },
+      "put": {
+        "tags": ["Categories"],
+        "summary": "Atualiza uma categoria (Apenas ADMIN)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "ID da categoria"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Categoria atualizada." },
+          "401": { "description": "Não autorizado." },
+          "403": { "description": "Acesso negado." },
+          "404": { "description": "Categoria não encontrada." }
+        }
+      },
+      "delete": {
+        "tags": ["Categories"],
+        "summary": "Deleta uma categoria (Apenas ADMIN)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "ID da categoria"
+          }
+        ],
+        "responses": {
+          "204": { "description": "Deletado com sucesso (Sem conteúdo)." },
+          "401": { "description": "Não autorizado." },
+          "403": { "description": "Acesso negado." },
+          "404": { "description": "Categoria não encontrada." }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LoginInput": {
+        "type": "object",
+        "required": ["phone", "password"],
+        "properties": {
+          "phone": { "type": "string" },
+          "password": { "type": "string" }
+        }
+      },
+      "CategoryInput": {
+        "type": "object",
+        "required": ["description"],
+        "properties": {
+          "description": { "type": "string", "minLength": 3 }
+        },
+        "example": {
+          "description": "Lanches"
+        }
+      },
+      "CategoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "description": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Insira o token JWT no formato: Bearer {token}"
+      }
+    }
+  }
+}
