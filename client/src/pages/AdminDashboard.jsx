@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ const AdminDashboard = () => {
       setItems(itemResponse.data);
     } catch (error) {
       console.error("Erro ao buscar dados", error);
+      toast.error("Não foi possível carregar os dados do painel.");
     }
   };
 
@@ -45,11 +47,11 @@ const AdminDashboard = () => {
     e.preventDefault();
     try {
       await api.post('/categories', { description: catDescription });
-      alert('Categoria criada!');
+      toast.success('Categoria criada com sucesso!');
       setCatDescription(''); 
       fetchData(); 
     } catch (error) {
-      alert('Erro: ' + (error.response?.data?.message || error.message));
+      toast.error('Erro: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -57,10 +59,10 @@ const AdminDashboard = () => {
     if(!confirm('Tem certeza? Isso pode falhar se houver produtos nesta categoria.')) return;
     try {
       await api.delete(`/categories/${id}`);
-      alert('Categoria removida!');
+      toast.success('Categoria removida!');
       fetchData();
     } catch (error) {
-      alert('Erro: ' + (error.response?.data?.message || error.message));
+      toast.error('Erro: ' + (error.response?.data?.message || error.message));
     }
   }
 
@@ -80,11 +82,11 @@ const AdminDashboard = () => {
       if (editingItemId) {
         // MODO EDIÇÃO: PUT
         await api.put(`/items/${editingItemId}`, payload);
-        alert('Produto atualizado com sucesso!');
+        toast.success('Produto atualizado com sucesso!');
       } else {
         // MODO CRIAÇÃO: POST
         await api.post('/items', payload);
-        alert('Produto criado com sucesso!');
+        toast.success('Produto criado com sucesso!');
       }
 
       // Limpar tudo e recarregar
@@ -93,7 +95,7 @@ const AdminDashboard = () => {
       fetchData();
 
     } catch (error) {
-      alert('Erro: ' + (error.response?.data?.message || error.message));
+      toast.error('Erro: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -122,10 +124,10 @@ const AdminDashboard = () => {
     
     try {
       await api.delete(`/items/${id}`);
-      alert('Produto excluído!');
+      toast.success('Produto excluído!');
       fetchData();
     } catch (error) {
-      alert('Erro ao excluir: ' + (error.response?.data?.message || error.message));
+      toast.error('Erro ao excluir: ' + (error.response?.data?.message || error.message));
     }
   };
 

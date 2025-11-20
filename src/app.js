@@ -1,5 +1,5 @@
 import express from 'express';
-import cors from 'cors'; // <--- 1. Importe o cors
+import cors from 'cors';
 import routes from './routes/index.js';
 import swaggerUi from 'swagger-ui-express';
 import fs from 'fs';

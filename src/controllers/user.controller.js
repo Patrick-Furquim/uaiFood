@@ -42,7 +42,6 @@ export const getAllUsers = async (req, res) => {
       include: { adress: true },
     });
 
-    // 4. Remover senhas da listagem (Boa Prática!)
     const usersWithoutPassword = users.map(user => {
       delete user.password;
       return user;

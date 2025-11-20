@@ -3,6 +3,7 @@ import CartContext from '../context/CartContext';
 import AuthContext from '../context/AuthContext';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const CheckoutPage = () => {
   const { cartItems, total, removeFromCart, clearCart } = useContext(CartContext);
@@ -12,11 +13,13 @@ const CheckoutPage = () => {
 
   const handleFinishOrder = async () => {
     if (!user) {
-      alert('Faça login para finalizar!');
+      toast.info('Faça login para finalizar o pedido!');
       return navigate('/login');
     }
 
-    if (cartItems.length === 0) return alert('Carrinho vazio!');
+    if (cartItems.length === 0) {
+        return toast.warn('Seu carrinho está vazio!');
+    }
 
     const orderData = {
       paymentMethod: paymentMethod,
@@ -31,12 +34,13 @@ const CheckoutPage = () => {
 
     try {
       await api.post('/orders', orderData);
-      alert('Pedido realizado com sucesso! 🚀');
+      toast.success('Pedido realizado com sucesso! 🚀');
       clearCart();
       navigate('/');
     } catch (error) {
       console.error(error);
-      alert('Erro ao finalizar pedido.');
+      const msg = error.response?.data?.message || 'Erro ao finalizar pedido.';
+      toast.error(msg);
     }
   };
 

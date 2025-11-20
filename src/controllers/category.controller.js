@@ -9,7 +9,6 @@ export const createCategory = async (req, res) => {
     });
     res.status(201).json(category);
   } catch (error) {
-    // Código 'P2002' é erro de valor único (description @unique)
     if (error.code === 'P2002') {
       return res.status(409).json({ message: 'Categoria já existe' });
     }

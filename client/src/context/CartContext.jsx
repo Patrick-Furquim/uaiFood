@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext } from 'react';
+import { toast } from 'react-toastify';
 
 const CartContext = createContext({});
 
@@ -19,12 +20,14 @@ export const CartProvider = ({ children }) => {
       // Se não, adiciona com quantidade 1
       return [...prev, { ...item, quantity: 1 }];
     });
-    alert(`${item.description} adicionado ao carrinho!`);
+    
+    toast.success(`${item.description} adicionado ao carrinho! 🛒`);
   };
 
   // Remover item
   const removeFromCart = (itemId) => {
     setCartItems((prev) => prev.filter((item) => item.id !== itemId));
+    toast.info('Item removido do carrinho.');
   };
 
   // Limpar carrinho (após compra)

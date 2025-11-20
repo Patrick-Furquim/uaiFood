@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import api from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -8,6 +9,7 @@ const RegisterPage = () => {
     name: '', phone: '', password: '', Usertype: 'CLIENT',
     street: '', number: '', district: '', city: '', state: '', zipCode: ''
   });
+  
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
@@ -35,10 +37,11 @@ const RegisterPage = () => {
 
     try {
       await api.post('/users', payload);
-      alert('Cadastro realizado com sucesso!');
+      toast.success('Cadastro realizado com sucesso! Faça login.');
       navigate('/login');
     } catch (err) {
       const msg = err.response?.data?.message || 'Erro ao cadastrar';
+      toast.error(msg);
       setError(msg);
     }
   };
@@ -46,8 +49,7 @@ const RegisterPage = () => {
   return (
     <div className="auth-container" style={{maxWidth: '600px'}}>
       <h2 className="auth-title">Criar Nova Conta</h2>
-      {error && <div style={{ color: 'red', marginBottom: '15px', textAlign: 'center' }}>{error}</div>}
-
+      
       <form onSubmit={handleSubmit}>
         <h4 style={{marginBottom: '10px', color: '#666'}}>Dados Pessoais</h4>
         <div className="form-group">

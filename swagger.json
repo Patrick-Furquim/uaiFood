@@ -148,6 +148,125 @@
           "404": { "description": "Categoria não encontrada." }
         }
       }
+    },
+    "/items": {
+      "get": {
+        "tags": ["Items"],
+        "summary": "Lista todos os itens",
+        "responses": { "200": { "description": "Sucesso" } }
+      },
+      "post": {
+        "tags": ["Items"],
+        "summary": "Cria um novo item (ADMIN)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ItemInput" } } }
+        },
+        "responses": { "201": { "description": "Criado" }, "403": { "description": "Apenas ADMIN" } }
+      }
+    },
+    "/items/{id}": {
+      "get": {
+        "tags": ["Items"],
+        "summary": "Busca item por ID",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Sucesso" }, "404": { "description": "Não encontrado" } }
+      },
+      "put": {
+        "tags": ["Items"],
+        "summary": "Atualiza item (ADMIN)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ItemInput" } } }
+        },
+        "responses": { "200": { "description": "Atualizado" } }
+      },
+      "delete": {
+        "tags": ["Items"],
+        "summary": "Deleta item (ADMIN)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "204": { "description": "Deletado" } }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Lista usuários (ADMIN)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Lista de usuários" } }
+      },
+      "post": {
+        "tags": ["Users"],
+        "summary": "Registra novo usuário (Público)",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserInput" } } }
+        },
+        "responses": { "201": { "description": "Usuário criado" } }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Busca usuário por ID (ADMIN)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Dados do usuário" } }
+      },
+      "put": {
+        "tags": ["Users"],
+        "summary": "Atualiza usuário (ADMIN)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserInput" } } }
+        },
+        "responses": { "200": { "description": "Atualizado" } }
+      },
+      "delete": {
+        "tags": ["Users"],
+        "summary": "Deleta usuário e endereço (ADMIN)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "204": { "description": "Deletado" } }
+      }
+    },
+    "/orders": {
+      "get": {
+        "tags": ["Orders"],
+        "summary": "Lista pedidos (Filtro automático por Role)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Lista de pedidos" } }
+      },
+      "post": {
+        "tags": ["Orders"],
+        "summary": "Cria novo pedido (Checkout)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderInput" } } }
+        },
+        "responses": { "201": { "description": "Pedido criado" } }
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "tags": ["Orders"],
+        "summary": "Busca pedido por ID",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Detalhes do pedido" } }
+      },
+      "put": {
+        "tags": ["Orders"],
+        "summary": "Atualiza status do pedido (ADMIN)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string" } } } } }
+        },
+        "responses": { "200": { "description": "Status atualizado" } }
+      }
     }
   },
   "components": {
@@ -177,6 +296,60 @@
           "description": { "type": "string" },
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ItemInput": {
+        "type": "object",
+        "required": ["description", "unitPrice", "categoryId"],
+        "properties": {
+          "description": { "type": "string", "minLength": 3 },
+          "unitPrice": { "type": "number", "minimum": 0 },
+          "categoryId": { "type": "integer" }
+        }
+      },
+      "AddressInput": {
+        "type": "object",
+        "required": ["street", "number", "district", "city", "state", "zipCode"],
+        "properties": {
+          "street": { "type": "string" },
+          "number": { "type": "string" },
+          "district": { "type": "string" },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "zipCode": { "type": "string", "minLength": 8, "maxLength": 8 }
+        }
+      },
+      "UserInput": {
+        "type": "object",
+        "required": ["phone", "password", "Usertype", "adress"],
+        "properties": {
+          "name": { "type": "string" },
+          "phone": { "type": "string", "minLength": 10 },
+          "password": { "type": "string", "minLength": 6 },
+          "Usertype": { "type": "string", "enum": ["ADMIN", "CLIENT"] },
+          "adress": { "$ref": "#/components/schemas/AddressInput" }
+        }
+      },
+      "OrderItemInput": {
+        "type": "object",
+        "required": ["listId", "quantity"],
+        "properties": {
+          "listId": { "type": "integer" },
+          "quantity": { "type": "integer" }
+        }
+      },
+      "OrderInput": {
+        "type": "object",
+        "required": ["paymentMethod", "status", "clienteId", "createdById", "items"],
+        "properties": {
+          "paymentMethod": { "type": "string", "enum": ["CASH", "CREDIT_CARD", "DEBIT_CARD", "Pix"] },
+          "status": { "type": "string" },
+          "clienteId": { "type": "integer" },
+          "createdById": { "type": "integer" },
+          "items": { 
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OrderItemInput" }
+          }
         }
       }
     },

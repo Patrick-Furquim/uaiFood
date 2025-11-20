@@ -21,7 +21,7 @@ export const checkAuth = (req, res, next) => {
 
     // 3. Anexa os dados do usuário (payload) à requisição
     // Agora, todas as rotas protegidas terão acesso a req.user
-    req.user = decoded; // { userId: 1, role: 'CLIENT' }
+    req.user = decoded;
     
     // 4. Continua para a próxima função (o controller)
     next(); 
